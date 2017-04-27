@@ -50,26 +50,29 @@ public class MainActivity extends Activity {
             throw new NullPointerException("Cannot link to null MediaPlayer");
         }
 
-        // Create the Visualizer object and attach it to our media player.
-        //mVisualizer = new Visualizer(player.getAudioSessionId());
-        mVisualizer = new Visualizer(0);
-        mVisualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
 
-        // Pass through Visualizer data to VisualizerView
+        mVisualizer = new Visualizer(0);
+       // mVisualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
+        mVisualizer.setCaptureSize(128);
+
         Visualizer.OnDataCaptureListener captureListener = new Visualizer.OnDataCaptureListener()
         {
             @Override
             public void onWaveFormDataCapture(Visualizer visualizer, byte[] bytes,
                                               int samplingRate)
-            {
-                Log.v("wave_form", " " +bytes.length+" "+bytes[0]+" "+bytes[512]+" "+bytes[1020]);
+            { float sum=0;
+                Log.v("wave_form", " " +bytes.length+" "+bytes[0]+" "+bytes[60]+" "+bytes[125]);
+                for (int i = 0; i < bytes.length; i++) {
+                    sum=sum+(float)bytes[i];
+                }
+                Log.v("sumatorio"," "+sum);
             }
 
             @Override
             public void onFftDataCapture(Visualizer visualizer, byte[] bytes,
                                          int samplingRate)
             {
-                Log.v("fft", " "+bytes[0]+" "+bytes[512]+" "+bytes[1020]);
+                Log.v("fft", " " + bytes.length+bytes[0] + " "+bytes[60] + " " + bytes[125]);
             }
         };
 
@@ -77,6 +80,7 @@ public class MainActivity extends Activity {
                 Visualizer.getMaxCaptureRate() / 2, true, true);
 
         // Enabled Visualizer and disable when we're done with the stream
+
         mVisualizer.setEnabled(true);
         player.setOnCompletionListener(new MediaPlayer.OnCompletionListener()
         {
@@ -84,14 +88,12 @@ public class MainActivity extends Activity {
             public void onCompletion(MediaPlayer mediaPlayer)
             {
                 mVisualizer.setEnabled(false);
+                mVisualizer.release();
             }
         });
     }
 
-    /**
-     * Call to release the resources used by VisualizerView. Like with the
-     * MediaPlayer it is good practice to call this method
-     */
+
     public void release()
     {
         mVisualizer.release();
